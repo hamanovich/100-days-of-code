@@ -6,10 +6,28 @@ from random import randint
 from draggable import DraggableWidget
 import bio_data
 
+import sys
+import os
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(
+        os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
+
 TITLE = bio_data.project_title
 
 window = Tk()
-window.geometry("900x600+1000+300")
+window_width = 900
+window_height = 600
+screen_width = window.winfo_screenwidth()
+screen_height = window.winfo_screenheight()
+x_position = (screen_width - window_width) // 2
+y_position = (screen_height - window_height) // 2
+
+window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
 window.resizable(0, 0)
 window.title(TITLE)
 window.rowconfigure(0, minsize=900, weight=1)
@@ -58,7 +76,7 @@ def choose_topic(topic):
         btn_home.grid(row=5, column=0, pady=5, sticky=EW)
 
 
-def on_button_click(index):
+def task_1_btn_click(index):
     current_text = entry_answer.get()
     updated_text = f"{current_text} {index}"
     entry_answer.config(bg="white", fg="black")
@@ -85,6 +103,7 @@ def go_home():
     clear_frame_content(frm_task_2)
     clear_frame_content(frm_cytology)
     clear_frame_content(btn_home)
+    lbl_main.config(text=TITLE)
     btn_home = None
 
     for btn in menu_btns:
@@ -100,8 +119,9 @@ def left_panel_ui():
     frm_panel.grid(row=0, column=0, sticky=NSEW)
     frm_panel.rowconfigure(2, weight=1)
 
-    lbl_panel = Label(frm_panel, text="Выберите раздел:", bg="#333")
-    lbl_panel.grid(row=0, column=0, padx=5, pady=15)
+    lbl_panel = Label(frm_panel, text="Выберите раздел:",
+                      bg="lightgreen", fg="black")
+    lbl_panel.grid(row=0, column=0, padx=5, pady=1)
 
     frm_menu_buttons = Frame(frm_panel, bg="lightgreen")
     frm_menu_buttons.grid(row=1, column=0, padx=10, sticky=NSEW)
@@ -111,7 +131,7 @@ def left_panel_ui():
                           text=menu_name_item,
                           cursor="hand2",
                           highlightbackground=frm_panel.cget("bg"),
-                          font=font.Font(size=20),
+                          font=font.Font(size=18),
                           command=lambda topic=menu_name_item: choose_topic(topic))
         btn_menu.grid(row=idx, column=0, pady=5, sticky=EW)
         menu_btns.append(btn_menu)
@@ -119,7 +139,7 @@ def left_panel_ui():
     btn_home = None
 
     frm_copyrights = Frame(frm_panel, bg=frm_panel.cget("bg"))
-    frm_copyrights.grid(row=2, column=0)
+    frm_copyrights.grid(row=2, column=0, sticky=N)
 
     lbl_copyrights = Label(frm_copyrights, text="СШ №8, Биология,\n2023", bg=frm_panel.cget(
         "bg"), fg="black", font=font.Font(size=10))
@@ -133,13 +153,13 @@ frm_main.grid(row=0, column=1, sticky=NSEW)
 frm_main.columnconfigure(0, weight=1)
 
 lbl_main = Label(frm_main, text=TITLE, bg="lightgreen", fg="black",
-                 font=font.Font(size=50), anchor="center")
+                 font=font.Font(size=38), anchor="center")
 lbl_main.grid(row=0, column=0, columnspan=3, pady=(0, 15), sticky=EW)
 
 frm_content = Frame(frm_main, padx=5, pady=5, bg=frm_main.cget("bg"))
 frm_content.grid(row=1, column=0)
 
-frm_landing = Frame(frm_content, bg="#333")
+frm_landing = Frame(frm_content, bg="lightgreen")
 frm_landing.grid(row=0, column=0)
 
 frm_task_1 = Frame(frm_content, bg=frm_main.cget("bg"))
@@ -157,14 +177,19 @@ frm_cytology.grid(row=0, column=0)
 
 
 def landing():
-    lbl_landing = Label(frm_landing, anchor=W, text=f"Выберите раздел", font=font.Font(size=20),
-                        pady=30)
+    lbl_landing = Label(frm_landing,
+                        anchor=W,
+                        text=f"Выберите раздел",
+                        font=font.Font(size=20),
+                        bg="lightgreen",
+                        fg="black",
+                        pady=10)
     lbl_landing.grid(row=0, column=0, columnspan=4)
 
     for idx, (frm_name, frm_img) in enumerate(bio_data.menu_buttons):
         frm = Frame(frm_landing, borderwidth=2, relief=GROOVE, cursor="hand2")
         frm.grid(row=1, column=idx, padx=10, pady=10)
-        image = PhotoImage(file=frm_img)
+        image = PhotoImage(file=resource_path(frm_img))
         lbl_image = Label(frm, image=image)
         lbl_image.image = image
         lbl_image.grid(row=0, column=0)
@@ -186,11 +211,10 @@ def task_1():
     global entry_answer
     frm_task_1.grid()
 
-    lbl_task = Label(frm_task_1, anchor=W, wraplength=500,
+    lbl_task = Label(frm_task_1, anchor=W, wraplength=600,
                      bg=frm_main.cget("bg"),
                      fg="black",
                      pady=5,
-                     font=font.Font(size=16),
                      text=bio_data.data["Ботаника"]["tasks"][0]["question"])
     lbl_task.grid(row=0, column=0)
 
@@ -199,19 +223,23 @@ def task_1():
     entry_answer.grid(row=1, column=0, pady=10, sticky=EW)
 
     for (idx, option) in bio_data.data["Ботаника"]["tasks"][0]["options"]:
-        row_frame = Frame(frm_task_1)
+        row_frame = Frame(frm_task_1, bg="white")
         row_frame.grid(row=idx+1, column=0, sticky=EW)
         row_frame.columnconfigure(1, weight=1)
 
-        label = Label(row_frame, text=f"{idx}.", font=font.Font(size=20))
+        label = Label(row_frame, text=f"{idx}.", bg="white",
+                      fg="black", font=font.Font(size=18))
         label.grid(row=0, column=0, sticky="w")
 
         button = Button(row_frame,
                         text=option,
                         cursor="hand2",
                         anchor=W,
-                        font=font.Font(size=18),
-                        command=lambda i=idx: on_button_click(i))
+                        bg="white",
+                        fg="black",
+                        borderwidth=0,
+                        font=font.Font(size=16),
+                        command=lambda i=idx: task_1_btn_click(i))
         button.grid(row=0, column=1, padx=(5, 0), sticky=EW)
 
     check_result_button = Button(
@@ -235,37 +263,36 @@ def task_2():
                      text=bio_data.data["Анатомия"]["tasks"][0]["question"])
     lbl_task.grid(row=0, column=0, pady=(0, 15))
 
-    tk_image = PhotoImage(file="images/eye_350.png")
-    image_label = Label(frm_task_2, image=tk_image)
-    image_label.image = tk_image
-    image_label.grid(row=1, column=0)
+    tk_image = PhotoImage(file=resource_path("images/eye_350.png"))
+    lbl_image = Label(frm_task_2, image=tk_image)
+    lbl_image.image = tk_image
+    lbl_image.grid(row=1, column=0)
 
     def check_position(name, x, y):
+        diff = 25
         match_option = [option for (
             n, option) in bio_data.data["Анатомия"]["tasks"][0]["options"] if n == name][0]
         match_btn = [
-            btn for btn in draggable_buttons if btn.cget("text") == name][0]
+            btn for btn in draggable_labels if btn.cget("text") == name][0]
 
-        if (abs(match_option["x"] - x)) < 15 and abs(match_option["y"] - y) < 15:
+        if (abs(match_option["x"] - x)) < diff and abs(match_option["y"] - y) < diff:
             match_btn.config(highlightbackground="green", fg="green")
         else:
             match_btn.config(highlightbackground="red", fg="red")
 
-        print(f"EL: {name}: {match_option}. Result should be {x}:{y}")
-
-    draggable_buttons = []
-    for (name, _) in bio_data.data["Анатомия"]["tasks"][0]["options"]:
+    draggable_labels = []
+    for idx, (name, _) in enumerate(bio_data.data["Анатомия"]["tasks"][0]["options"]):
         draggable_label = DraggableWidget(
-            image_label, cursor="hand2", relief=RAISED, bd=1, text=name, on_release_callback=check_position)
-        draggable_label.place(x=randint(5, 200), y=randint(5, 320))
-        draggable_buttons.append(draggable_label)
+            frm_task_2, cursor="hand2", relief=RAISED, bd=1, bg="#666", fg="white", text=name, on_release_callback=check_position)
+        draggable_label.place(x=5, y=50 + idx * 25)
+        draggable_labels.append(draggable_label)
 
     # check_result_button = Button(
     #     frm_task_2, text="Проверить результат", font=font.Font(size=20), command=check_result)
     # check_result_button.grid(row=2, column=0, pady=10, sticky=EW)
 
     link_label = Label(
-        frm_task_2, text="Узнать больше на Youtube.com", fg="lightgreen", cursor="hand2")
+        frm_task_2, text="Узнать больше на Youtube.com", bg="#333", fg="lightgreen", cursor="hand2")
     link_label.grid(row=3, column=0, pady=10)
     link_label.bind(
         "<Button-1>", lambda _: webbrowser.open("https://youtu.be/rSVDJyqHXQk?si=3pPhfFCKeMs-yn3R"))
@@ -277,12 +304,16 @@ def task_2():
 
 def cytology_tasks():
     frm_cytology.grid()
-    lbl_intro = Label(frm_cytology, anchor=W, wraplength=500, bg=frm_main.cget("bg"), fg="black",
+    lbl_intro = Label(frm_cytology,
+                      anchor=W,
+                      wraplength=500,
+                      bg=frm_main.cget("bg"),
+                      fg="black",
                       pady=30,
                       text=bio_data.data["Цитология"]["intro"])
     lbl_intro.grid(row=0, column=0)
     lbl_task = Label(frm_cytology, anchor=W,
-                     text="Проект в процессе наполнения данными ⏰", font=font.Font(size=24))
+                     text="Проект в процессе наполнения данными ⏰", font=font.Font(size=20))
     lbl_task.grid(row=3, column=0)
 
 
